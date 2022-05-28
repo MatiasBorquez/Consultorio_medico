@@ -6,24 +6,14 @@ package com.mycompany.consultoriomedico.models;
 public class Medico extends Paciente{
     private String especializacion;
     private String matricula;
-    private String dni;
 
     public Medico() {
     }
 
-    public Medico(String especializacion, String matricula, String dni, String nombre, String apellido, String email, String telefono) {
+    public Medico(String especializacion, String matricula, String nombre, String apellido, String email, String telefono) {
         super(nombre, apellido, email, telefono);
         this.especializacion = especializacion;
         this.matricula = matricula;
-        this.dni = dni;
-    }
-
-    public String getDni() {
-        return dni;
-    }
-
-    public void setDni(String dni) {
-        this.dni = dni;
     }
 
     public String getEspecializacion() {
