@@ -50,7 +50,7 @@ public class MedicoDao {
                 lista.add(m);
                 
             }
-        } catch (Exception e) {
+        } catch (SQLException e) {
             Logger.getLogger(PacienteDAO.class.getName()).log(Level.SEVERE,null,e);
         }
         return lista;
@@ -64,7 +64,7 @@ public class MedicoDao {
                     +"', '"+medico.getTelefono()+"', '"+medico.getEspecializacion()+"', '"+medico.getMatricula()+"');";
             Statement statement = conexion.createStatement();
             statement.execute(sql);
-        } catch (Exception e) {
+        } catch (SQLException e) {
             Logger.getLogger(PacienteDAO.class.getName()).log(Level.SEVERE,null,e);
         }
     }
@@ -75,7 +75,7 @@ public class MedicoDao {
             String sql = "DELETE FROM medico WHERE `medico`.`id` = "+id+"";
             Statement statement = conexion.createStatement();
             statement.execute(sql);
-        } catch (Exception e) {
+        } catch (SQLException e) {
             Logger.getLogger(PacienteDAO.class.getName()).log(Level.SEVERE,null,e);
         }
     }
@@ -88,7 +88,7 @@ public class MedicoDao {
                     +medico.getEspecializacion()+"', `matricula` = '"+medico.getMatricula()+"' WHERE `medico`.`id` = "+medico.getId()+";";
             Statement statement = conexion.createStatement();
             statement.execute(sql);
-        } catch (Exception e) {
+        } catch (SQLException e) {
             Logger.getLogger(Paciente.class.getName()).log(Level.SEVERE,null,e);
         }
     }
