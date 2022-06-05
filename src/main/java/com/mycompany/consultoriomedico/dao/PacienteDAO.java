@@ -11,10 +11,10 @@ public class PacienteDAO implements IPacienteDao{
 
     private Connection conexionTransaccional;
 
-    private static final String SQL_SELECT = "SELECT id, nombre, apellido, email, telefono WHERE paciente";
-    private static final String SQL_INSERT = "INSERT INTO paciente(nombre, apellido, email, telefono) values (?,?,?,?)";
-    private static final String SQL_UPDATE = "UPDATE paciente SET nombre=?, apellido=?, email=?, telefono=? WHERE id = ?";
-    private static final String SQL_DELETE = "DELETE FROM paciente WHERE id=?";
+    private static final String SQL_SELECT = "SELECT id, nombre, apellido, email, telefono FROM pacientes";
+    private static final String SQL_INSERT = "INSERT INTO pacientes(nombre, apellido, email, telefono) values (?,?,?,?)";
+    private static final String SQL_UPDATE = "UPDATE pacientes SET nombre=?, apellido=?, email=?, telefono=? WHERE id = ?";
+    private static final String SQL_DELETE = "DELETE FROM pacientes WHERE id=?";
 
     public PacienteDAO() {
 

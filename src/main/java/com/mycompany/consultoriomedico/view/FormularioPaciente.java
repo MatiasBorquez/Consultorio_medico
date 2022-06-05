@@ -1,12 +1,16 @@
 package com.mycompany.consultoriomedico.view;
 
 
-import com.mycompany.consultoriomedico.dao.PacienteDAO;
+import com.mycompany.consultoriomedico.controllers.ControllersPacientes;
+import com.mycompany.consultoriomedico.dao.*;
 import com.mycompany.consultoriomedico.models.Paciente;
 import com.mysql.jdbc.StringUtils;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
-import javax.swing.JOptionPane;
 
 /**
  *
@@ -178,16 +182,30 @@ public class FormularioPaciente extends javax.swing.JFrame {
     private void txtApellidoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtApellidoActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_txtApellidoActionPerformed
-    ArrayList<Paciente> lista = new ArrayList<>();
+    private List<Paciente> lista = new ArrayList<>();
+    private static final ControllersPacientes control = new ControllersPacientes();
     
     private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
         Paciente a = new Paciente(this.txtNombre.getText(),this.txtApellido.getText(),this.txtEmail.getText(),this.txtTelefono.getText());
         if(!StringUtils.isEmptyOrWhitespaceOnly(lbId.getText())){
-            a.setId(lbId.getText());
+            a.setId(Integer.parseInt(lbId.getText()));
+            try {
+                control.update(a);
+            } catch (SQLException ex) {
+                Logger.getLogger(FormularioPaciente.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }else{
+            try {
+                control.insert(a);
+            } catch (SQLException ex) {
+                Logger.getLogger(FormularioPaciente.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
-        PacienteDAO dao = new PacienteDAO();
-        dao.guardar(a);
-        actualizarLista();
+        try {
+            actualizarLista();
+        } catch (SQLException ex) {
+            Logger.getLogger(FormularioPaciente.class.getName()).log(Level.SEVERE, null, ex);
+        }
         limpiarCajaDeTexto();
 
     }//GEN-LAST:event_btnGuardarActionPerformed
@@ -195,13 +213,20 @@ public class FormularioPaciente extends javax.swing.JFrame {
     private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
         int indice = this.listPacientes.getSelectedIndex();
         Paciente c = lista.get(indice);
-        PacienteDAO dao = new PacienteDAO();
-        dao.borrar(c.getId());
-        actualizarLista();
+        try {
+            control.delete(c);
+            actualizarLista();
+        } catch (SQLException ex) {
+            Logger.getLogger(FormularioPaciente.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_btnEliminarActionPerformed
 
     private void formComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentShown
-        actualizarLista();
+        try {
+            actualizarLista();
+        } catch (SQLException ex) {
+            Logger.getLogger(FormularioPaciente.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_formComponentShown
 
     private void btnEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditarActionPerformed
@@ -212,14 +237,13 @@ public class FormularioPaciente extends javax.swing.JFrame {
         this.txtApellido.setText(c.getApellido());
         this.txtEmail.setText(c.getEmail());
         this.txtTelefono.setText(c.getTelefono());
-        this.lbId.setText(c.getId());
+        this.lbId.setText(String.valueOf(c.getId()));
     }//GEN-LAST:event_btnEditarActionPerformed
 
     
     
-    private void actualizarLista(){
-        PacienteDAO dao= new PacienteDAO();
-        lista = dao.listar();
+    private void actualizarLista() throws SQLException{
+        lista = control.select();
         DefaultListModel datos = new DefaultListModel();
         for(Paciente dato: lista){
             datos.addElement(dato.getNombreCompleto());
