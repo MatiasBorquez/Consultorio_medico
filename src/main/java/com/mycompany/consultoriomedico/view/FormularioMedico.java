@@ -1,6 +1,6 @@
 package com.mycompany.consultoriomedico.view;
 
-import com.mycompany.consultoriomedico.dao.MedicoDao;
+import com.mycompany.consultoriomedico.dao.*;
 import com.mycompany.consultoriomedico.models.Medico;
 import com.mysql.jdbc.StringUtils;
 import java.util.*;
@@ -220,14 +220,12 @@ public class FormularioMedico extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private List<Medico> lista = new ArrayList<>();
-    private final MedicoDao dao = new MedicoDao();
     
     private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
         Medico m = new Medico(this.txtEspecializacion.getText(),this.txtMatricula.getText(),this.txtNombre.getText(),this.txtApellido.getText(),this.txtEmail.getText(),this.txtTelefono.getText());
         if(!StringUtils.isEmptyOrWhitespaceOnly(this.lbId.getText())){
-            m.setId(lbId.getText());
+            m.setId(Integer.parseInt(lbId.getText()));
         }
-        dao.guardar(m);
         actualizarLista();
         limpiarCajaDeTexto();
     }//GEN-LAST:event_btnGuardarActionPerformed

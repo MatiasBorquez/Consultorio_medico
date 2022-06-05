@@ -1,103 +1,148 @@
 package com.mycompany.consultoriomedico.dao;
 
 import com.mycompany.consultoriomedico.models.Medico;
-import com.mycompany.consultoriomedico.models.Paciente;
-import com.mysql.jdbc.StringUtils;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.logging.*;
+import java.util.*;
+import java.util.List;
 
 /**
  * @author Boros
  */
-public class MedicoDao {
-    public Connection conectar(){
-        String baseDatos = "consultorio";
-        String usuario = "root";
-        String host = "localhost";
-        String password = "";
-        String puerto = "3306";
-        String driver = "com.mysql.jdbc.Driver";
-        String conexionUrl = "jdbc:mysql://" + host + ":" + puerto + "/" + baseDatos + "?useSSL=false";
-        Connection conexion = null;
-        try {
-            Class.forName(driver);
-            conexion = DriverManager.getConnection(conexionUrl,usuario,password);
-        } catch (ClassNotFoundException | SQLException e) {
-            Logger.getLogger(PacienteDAO.class.getName()).log(Level.SEVERE,null,e);
-        }
-        return conexion;
+public class MedicoDao implements IMedicoDao{
+
+    private Connection conexionTransaccional;
+
+    private static final String SQL_SELECT = "SELECT id, nombre, apellido, email, telefono, disciplina, matricula FROM medico";
+    private static final String SQL_INSERT = "INSERT INTO medico(nombre, apellido, email, telefono, disciplina, matricula) values (?,?,?,?,?,?)";
+    private static final String SQL_UPDATE = "UPDATE medico SET nombre=?, apellido=?, email=?, telefono=?, disciplina = ?, matricula = ? WHERE id = ?";
+    private static final String SQL_DELETE = "DELETE FROM medico WHERE id=?";
+
+    public MedicoDao() {
+
+    }
+
+    public MedicoDao(Connection conexionTransaccional) {
+        this.conexionTransaccional = conexionTransaccional;
     }
     
-    
-    public ArrayList<Medico> listar(){
-        ArrayList<Medico> lista = new ArrayList<>();
+    @Override
+    public List<Medico> select() throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        Medico medico = null;
+        List<Medico> medicos = new ArrayList<Medico>();
+
         try {
-            Connection conexion = conectar();
-            String sql = "SELECT * FROM `medico`";
-            
-            Statement statement = conexion.createStatement();
-            ResultSet resultado = statement.executeQuery(sql);
-            while(resultado.next()){
-                Medico m = new Medico();
-                m.setId(resultado.getString("id"));
-                m.setNombre(resultado.getString("nombre"));
-                m.setApellido(resultado.getString("apellido"));
-                m.setEmail(resultado.getString("email"));
-                m.setTelefono(resultado.getString("telefono"));
-                m.setMatricula(resultado.getString("matricula"));
-                m.setEspecializacion(resultado.getString("disciplina"));
-                lista.add(m);
-                
+            conn = this.conexionTransaccional != null ? this.conexionTransaccional : Conexion.getConnection();
+            stmt = conn.prepareStatement(SQL_SELECT);
+            rs = stmt.executeQuery();
+            while (rs.next()) {
+                int id = rs.getInt("id");
+                String nombre = rs.getString("nombre");
+                String apellido = rs.getString("apellido");
+                String email = rs.getString("email");
+                String telefono = rs.getString("telefono");
+                String especializacion = rs.getString("especializacion");
+                String matricula = rs.getString("matricula");
+
+                medico = new Medico();
+                medico.setId(id);
+                medico.setNombre(nombre);
+                medico.setApellido(apellido);
+                medico.setEmail(email);
+                medico.setTelefono(telefono);
+                medico.setEspecializacion(especializacion);
+                medico.setMatricula(matricula);
+
+                medicos.add(medico);
             }
-        } catch (SQLException e) {
-            Logger.getLogger(PacienteDAO.class.getName()).log(Level.SEVERE,null,e);
+        } finally {
+            Conexion.close(rs);
+            Conexion.close(stmt);
+            if (this.conexionTransaccional == null) {
+                Conexion.close(conn);
+            }
+
         }
-        return lista;
+
+        return medicos;
     }
-    
-    public void agregar(Medico medico){
+
+    @Override
+    public int insert(Medico medico) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        int rows = 0;
         try {
-            Connection conexion = conectar();
-            String sql = "INSERT INTO `medico` (`id`, `nombre`, `apellido`, `email`, `telefono`, `disciplina`, "
-                    + "`matricula`) VALUES (NULL, '"+medico.getNombre()+"', '"+medico.getApellido()+"', '"+medico.getEmail()
-                    +"', '"+medico.getTelefono()+"', '"+medico.getEspecializacion()+"', '"+medico.getMatricula()+"');";
-            Statement statement = conexion.createStatement();
-            statement.execute(sql);
-        } catch (SQLException e) {
-            Logger.getLogger(PacienteDAO.class.getName()).log(Level.SEVERE,null,e);
+            conn = this.conexionTransaccional != null ? this.conexionTransaccional : Conexion.getConnection();
+            stmt = conn.prepareStatement(SQL_INSERT);
+            stmt.setString(1, medico.getNombre());
+            stmt.setString(2, medico.getApellido());
+            stmt.setString(3, medico.getEmail());
+            stmt.setString(4, medico.getTelefono());
+            stmt.setString(5, medico.getEspecializacion());
+            stmt.setString(6, medico.getMatricula());
+
+            rows = stmt.executeUpdate();
+        } finally {
+            Conexion.close(stmt);
+            if (this.conexionTransaccional == null) {
+                Conexion.close(conn);
+            }
         }
+
+        return rows;
     }
-    
-    public void borrar(String id){
+
+    @Override
+    public int update(Medico medico) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        int rows = 0;
+
         try {
-            Connection conexion = conectar();
-            String sql = "DELETE FROM medico WHERE `medico`.`id` = "+id+"";
-            Statement statement = conexion.createStatement();
-            statement.execute(sql);
-        } catch (SQLException e) {
-            Logger.getLogger(PacienteDAO.class.getName()).log(Level.SEVERE,null,e);
+            conn = this.conexionTransaccional != null ? this.conexionTransaccional : Conexion.getConnection();
+            stmt = conn.prepareStatement(SQL_UPDATE);
+            stmt.setString(1, medico.getNombre());
+            stmt.setString(2, medico.getApellido());
+            stmt.setString(3, medico.getEmail());
+            stmt.setString(4, medico.getTelefono());
+            stmt.setString(5, medico.getEspecializacion());
+            stmt.setString(6, medico.getMatricula());
+            stmt.setInt(7, medico.getId());
+
+            rows = stmt.executeUpdate();
+
+        } finally {
+            Conexion.close(stmt);
+            if (this.conexionTransaccional == null) {
+                Conexion.close(conn);
+            }
         }
+
+        return rows;
     }
-    
-    public void actualizar(Medico medico){
+
+    @Override
+    public int delete(Medico medico) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        int rows = 0;
+
         try {
-            Connection conexion = conectar();
-            String sql = "UPDATE `medico` SET `nombre` = '"+medico.getNombre()+"', `apellido` = '"+medico.getApellido()
-                    +"', `email` = '"+medico.getEmail()+"', `telefono` = '"+medico.getTelefono()+"', `disciplina` = '"
-                    +medico.getEspecializacion()+"', `matricula` = '"+medico.getMatricula()+"' WHERE `medico`.`id` = "+medico.getId()+";";
-            Statement statement = conexion.createStatement();
-            statement.execute(sql);
-        } catch (SQLException e) {
-            Logger.getLogger(Paciente.class.getName()).log(Level.SEVERE,null,e);
+            conn = this.conexionTransaccional != null ? this.conexionTransaccional : Conexion.getConnection();
+            stmt = conn.prepareStatement(SQL_DELETE);
+            stmt.setInt(1, medico.getId());
+            rows = stmt.executeUpdate();
+        } finally {
+            Conexion.close(stmt);
+            if (this.conexionTransaccional == null) {
+                Conexion.close(conn);
+            }
         }
-    }
-    public void guardar(Medico m){
-        if(StringUtils.isEmptyOrWhitespaceOnly(m.getId())){
-            agregar(m);
-        }else{
-            actualizar(m);
-        }
+
+        return rows;
     }
     
 }

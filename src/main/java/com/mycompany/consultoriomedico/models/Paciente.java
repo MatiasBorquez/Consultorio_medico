@@ -8,7 +8,7 @@ public class Paciente {
     private String apellido;
     private String telefono;
     private String email;
-    private String id;
+    private int id;
 
     public Paciente(String nombre, String apellido, String email, String telefono) {
         this.nombre = nombre;
@@ -52,11 +52,11 @@ public class Paciente {
         this.email = email;
     }
 
-    public String getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
     

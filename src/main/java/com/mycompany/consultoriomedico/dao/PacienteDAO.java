@@ -1,95 +1,140 @@
 package com.mycompany.consultoriomedico.dao;
 
 import com.mycompany.consultoriomedico.models.Paciente;
-import com.mysql.jdbc.StringUtils;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.logging.*;
+import java.util.*;
 
 /**
  * @author Boros
  */
-public class PacienteDAO {
-    
-    public Connection conectar(){
-        String baseDatos = "consultorio";
-        String usuario = "root";
-        String host = "localhost";
-        String password = "";
-        String puerto = "3306";
-        String driver = "com.mysql.jdbc.Driver";
-        String conexionUrl = "jdbc:mysql://" + host + ":" + puerto + "/" + baseDatos + "?useSSL=false";
-        Connection conexion = null;
-        try {
-            Class.forName(driver);
-            conexion = DriverManager.getConnection(conexionUrl,usuario,password);
-        } catch (Exception e) {
-            Logger.getLogger(PacienteDAO.class.getName()).log(Level.SEVERE,null,e);
-        }
-        return conexion;
+public class PacienteDAO implements IPacienteDao{
+
+    private Connection conexionTransaccional;
+
+    private static final String SQL_SELECT = "SELECT id, nombre, apellido, email, telefono WHERE paciente";
+    private static final String SQL_INSERT = "INSERT INTO paciente(nombre, apellido, email, telefono) values (?,?,?,?)";
+    private static final String SQL_UPDATE = "UPDATE paciente SET nombre=?, apellido=?, email=?, telefono=? WHERE id = ?";
+    private static final String SQL_DELETE = "DELETE FROM paciente WHERE id=?";
+
+    public PacienteDAO() {
+
+    }
+
+    public PacienteDAO(Connection conexionTransaccional) {
+        this.conexionTransaccional = conexionTransaccional;
     }
     
-    public ArrayList<Paciente> listar(){
-        ArrayList<Paciente> lista = new ArrayList<>();
+    @Override
+    public List<Paciente> select() throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        Paciente paciente = null;
+        List<Paciente> pacientes = new ArrayList<>();
+
         try {
-            Connection conexion = conectar();
-            String sql = "SELECT * FROM `pacientes`";
-            
-            Statement statement = conexion.createStatement();
-            ResultSet resultado = statement.executeQuery(sql);
-            while(resultado.next()){
-                Paciente c = new Paciente();
-                c.setId(resultado.getString("id"));
-                c.setNombre(resultado.getString("nombre"));
-                c.setApellido(resultado.getString("apellido"));
-                c.setEmail(resultado.getString("email"));
-                c.setTelefono(resultado.getString("telefono"));
-                lista.add(c);
-                
+            conn = this.conexionTransaccional != null ? this.conexionTransaccional : Conexion.getConnection();
+            stmt = conn.prepareStatement(SQL_SELECT);
+            rs = stmt.executeQuery();
+            while (rs.next()) {
+                int id = rs.getInt("id");
+                String nombre = rs.getString("nombre");
+                String apellido = rs.getString("apellido");
+                String email = rs.getString("email");
+                String telefono = rs.getString("telefono");
+
+                paciente = new Paciente();
+                paciente.setId(id);
+                paciente.setNombre(nombre);
+                paciente.setApellido(apellido);
+                paciente.setEmail(email);
+                paciente.setTelefono(telefono);
+
+                pacientes.add(paciente);
             }
-        } catch (Exception e) {
-            Logger.getLogger(PacienteDAO.class.getName()).log(Level.SEVERE,null,e);
+        } finally {
+            Conexion.close(rs);
+            Conexion.close(stmt);
+            if (this.conexionTransaccional == null) {
+                Conexion.close(conn);
+            }
+
         }
-        return lista;
+
+        return pacientes;
+    }
+
+    @Override
+    public int insert(Paciente paciente) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        int rows = 0;
+        try {
+            conn = this.conexionTransaccional != null ? this.conexionTransaccional : Conexion.getConnection();
+            stmt = conn.prepareStatement(SQL_INSERT);
+            stmt.setString(1, paciente.getNombre());
+            stmt.setString(2, paciente.getApellido());
+            stmt.setString(3, paciente.getEmail());
+            stmt.setString(4, paciente.getTelefono());
+
+            rows = stmt.executeUpdate();
+        } finally {
+            Conexion.close(stmt);
+            if (this.conexionTransaccional == null) {
+                Conexion.close(conn);
+            }
+        }
+
+        return rows;
+    }
+
+    @Override
+    public int update(Paciente paciente) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        int rows = 0;
+
+        try {
+            conn = this.conexionTransaccional != null ? this.conexionTransaccional : Conexion.getConnection();
+            stmt = conn.prepareStatement(SQL_UPDATE);
+            stmt.setString(1, paciente.getNombre());
+            stmt.setString(2, paciente.getApellido());
+            stmt.setString(3, paciente.getEmail());
+            stmt.setString(4, paciente.getTelefono());
+            stmt.setInt(5, paciente.getId());
+
+            rows = stmt.executeUpdate();
+
+        } finally {
+            Conexion.close(stmt);
+            if (this.conexionTransaccional == null) {
+                Conexion.close(conn);
+            }
+        }
+
+        return rows;
+    }
+
+    @Override
+    public int delete(Paciente paciente) throws SQLException {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        int rows = 0;
+
+        try {
+            conn = this.conexionTransaccional != null ? this.conexionTransaccional : Conexion.getConnection();
+            stmt = conn.prepareStatement(SQL_DELETE);
+            stmt.setInt(1, paciente.getId());
+            rows = stmt.executeUpdate();
+        } finally {
+            Conexion.close(stmt);
+            if (this.conexionTransaccional == null) {
+                Conexion.close(conn);
+            }
+        }
+
+        return rows;
     }
     
-    public void agregar(Paciente paciente){
-        try {
-            Connection conexion = conectar();
-            String sql = "INSERT INTO `pacientes` (`id`, `nombre`, `apellido`, `email`, `telefono`) VALUES (NULL, '"+paciente.getNombre()+"', '"+paciente.getApellido()+"', '"+paciente.getEmail()+"', '"+paciente.getTelefono()+"');";
-            Statement statement = conexion.createStatement();
-            statement.execute(sql);
-        } catch (Exception e) {
-            Logger.getLogger(PacienteDAO.class.getName()).log(Level.SEVERE,null,e);
-        }
-    }
     
-    public void borrar(String id){
-        try {
-            Connection conexion = conectar();
-            String sql = "DELETE FROM pacientes WHERE `pacientes`.`id` = " +id+";";
-            Statement statement = conexion.createStatement();
-            statement.execute(sql);
-        } catch (Exception e) {
-            Logger.getLogger(PacienteDAO.class.getName()).log(Level.SEVERE,null,e);
-        }
-    }
-    
-    public void actualizar(Paciente paciente){
-        try {
-            Connection conexion = conectar();
-            String sql = "UPDATE `pacientes` SET `nombre` = '"+paciente.getNombre()+"', `apellido` = '"+paciente.getApellido()+"', `email` = '"+paciente.getEmail()+"', `telefono` = '"+paciente.getTelefono()+"' WHERE `pacientes`.`id` = "+paciente.getId()+";";
-            Statement statement = conexion.createStatement();
-            statement.execute(sql);
-        } catch (Exception e) {
-            Logger.getLogger(Paciente.class.getName()).log(Level.SEVERE,null,e);
-        }
-    }
-    public void guardar(Paciente p){
-        if(StringUtils.isEmptyOrWhitespaceOnly(p.getId())){
-            agregar(p);
-        }else{
-            actualizar(p);
-        }
-    }
 }
