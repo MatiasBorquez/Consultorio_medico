@@ -10,11 +10,23 @@ public class Paciente {
     private String email;
     private int id;
 
+    public Paciente(String nombre, String apellido, String telefono, String email, int id) {
+        this.nombre = nombre;
+        this.apellido = apellido;
+        this.telefono = telefono;
+        this.email = email;
+        this.id = id;
+    }
+
     public Paciente(String nombre, String apellido, String email, String telefono) {
         this.nombre = nombre;
         this.apellido = apellido;
         this.telefono = telefono;
         this.email = email;
+    }
+
+    public Paciente(int id) {
+        this.id = id;
     }
 
     public Paciente() {

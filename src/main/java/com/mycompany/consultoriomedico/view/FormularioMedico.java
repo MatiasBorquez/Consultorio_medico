@@ -3,7 +3,10 @@ package com.mycompany.consultoriomedico.view;
 import com.mycompany.consultoriomedico.dao.*;
 import com.mycompany.consultoriomedico.models.Medico;
 import com.mysql.jdbc.StringUtils;
+import java.sql.SQLException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 
 
@@ -220,13 +223,35 @@ public class FormularioMedico extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private List<Medico> lista = new ArrayList<>();
+    private static final IMedicoDao dao = new MedicoDao();
     
     private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
         Medico m = new Medico(this.txtEspecializacion.getText(),this.txtMatricula.getText(),this.txtNombre.getText(),this.txtApellido.getText(),this.txtEmail.getText(),this.txtTelefono.getText());
         if(!StringUtils.isEmptyOrWhitespaceOnly(this.lbId.getText())){
             m.setId(Integer.parseInt(lbId.getText()));
+            try {
+                dao.update(m);
+            } catch (SQLException ex) {
+                Logger.getLogger(FormularioMedico.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            try {
+            actualizarLista();
+            } catch (SQLException ex) {
+                Logger.getLogger(FormularioMedico.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            limpiarCajaDeTexto();
+            return;
         }
-        actualizarLista();
+        try {
+            dao.insert(m);
+        } catch (SQLException ex) {
+            Logger.getLogger(FormularioMedico.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        try {
+            actualizarLista();
+        } catch (SQLException ex) {
+            Logger.getLogger(FormularioMedico.class.getName()).log(Level.SEVERE, null, ex);
+        }
         limpiarCajaDeTexto();
     }//GEN-LAST:event_btnGuardarActionPerformed
    
@@ -241,26 +266,39 @@ public class FormularioMedico extends javax.swing.JFrame {
         this.txtTelefono.setText(m.getTelefono());
         this.txtEspecializacion.setText(m.getEspecializacion());
         this.txtMatricula.setText(m.getMatricula());
-        this.lbId.setText(m.getId());
+        this.lbId.setText(String.valueOf(m.getId()));
     }//GEN-LAST:event_btnEditarActionPerformed
 
     private void btnBorrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBorrarActionPerformed
         int indice = this.listDoctores.getSelectedIndex();
         Medico m = lista.get(indice);
-        dao.borrar(m.getId());
+        try {
+            dao.delete(new Medico(m.getId()));
+            actualizarLista();
+        } catch (SQLException ex) {
+            Logger.getLogger(FormularioMedico.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        limpiarCajaDeTexto();
     }//GEN-LAST:event_btnBorrarActionPerformed
 
     private void jPanel1ComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_jPanel1ComponentShown
-        actualizarLista();
+        try {
+            actualizarLista();
+        } catch (SQLException ex) {
+            Logger.getLogger(FormularioMedico.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_jPanel1ComponentShown
 
     private void formComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentShown
-        actualizarLista();
+        try {
+            actualizarLista();
+        } catch (SQLException ex) {
+            Logger.getLogger(FormularioMedico.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_formComponentShown
 
-    private void actualizarLista(){
-        MedicoDao dao= new MedicoDao();
-        lista = dao.listar();
+    private void actualizarLista() throws SQLException{
+        lista = dao.select();
         DefaultListModel datos = new DefaultListModel();
         for(Medico dato: lista){
             datos.addElement(dato.getNombreCompleto());

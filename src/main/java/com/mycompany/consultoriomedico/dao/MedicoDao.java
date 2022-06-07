@@ -43,7 +43,7 @@ public class MedicoDao implements IMedicoDao{
                 String apellido = rs.getString("apellido");
                 String email = rs.getString("email");
                 String telefono = rs.getString("telefono");
-                String especializacion = rs.getString("especializacion");
+                String disciplina = rs.getString("disciplina");
                 String matricula = rs.getString("matricula");
 
                 medico = new Medico();
@@ -52,7 +52,7 @@ public class MedicoDao implements IMedicoDao{
                 medico.setApellido(apellido);
                 medico.setEmail(email);
                 medico.setTelefono(telefono);
-                medico.setEspecializacion(especializacion);
+                medico.setEspecializacion(disciplina);
                 medico.setMatricula(matricula);
 
                 medicos.add(medico);

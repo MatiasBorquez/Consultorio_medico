@@ -10,6 +10,16 @@ public class Medico extends Paciente{
     public Medico() {
     }
 
+    public Medico(int id) {
+        super(id);
+    }
+
+    public Medico(String especializacion, String matricula, String nombre, String apellido, String telefono, String email, int id) {
+        super(nombre, apellido, telefono, email, id);
+        this.especializacion = especializacion;
+        this.matricula = matricula;
+    }
+
     public Medico(String especializacion, String matricula, String nombre, String apellido, String email, String telefono) {
         super(nombre, apellido, email, telefono);
         this.especializacion = especializacion;
