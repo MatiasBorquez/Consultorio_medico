@@ -1,5 +1,6 @@
 package com.mycompany.consultoriomedico.view;
 
+import com.mycompany.consultoriomedico.controllers.ValidacionesFormulario;
 import com.mycompany.consultoriomedico.dao.*;
 import com.mycompany.consultoriomedico.models.Medico;
 import com.mysql.jdbc.StringUtils;
@@ -224,9 +225,11 @@ public class FormularioMedico extends javax.swing.JFrame {
 
     private List<Medico> lista = new ArrayList<>();
     private static final IMedicoDao dao = new MedicoDao();
+    private static final ValidacionesFormulario validar = new ValidacionesFormulario();
     
     private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
         Medico m = new Medico(this.txtEspecializacion.getText(),this.txtMatricula.getText(),this.txtNombre.getText(),this.txtApellido.getText(),this.txtEmail.getText(),this.txtTelefono.getText());
+        if(validar.ValidacionMedico(m)){return;}
         if(!StringUtils.isEmptyOrWhitespaceOnly(this.lbId.getText())){
             m.setId(Integer.parseInt(lbId.getText()));
             try {

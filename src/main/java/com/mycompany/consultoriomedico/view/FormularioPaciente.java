@@ -2,6 +2,7 @@ package com.mycompany.consultoriomedico.view;
 
 
 import com.mycompany.consultoriomedico.controllers.ControllersPacientes;
+import com.mycompany.consultoriomedico.controllers.ValidacionesFormulario;
 import com.mycompany.consultoriomedico.dao.*;
 import com.mycompany.consultoriomedico.models.Paciente;
 import com.mysql.jdbc.StringUtils;
@@ -184,9 +185,12 @@ public class FormularioPaciente extends javax.swing.JFrame {
     }//GEN-LAST:event_txtApellidoActionPerformed
     private List<Paciente> lista = new ArrayList<>();
     private static final ControllersPacientes control = new ControllersPacientes();
+    private static final ValidacionesFormulario validar = new ValidacionesFormulario();
+    
     
     private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
         Paciente a = new Paciente(this.txtNombre.getText(),this.txtApellido.getText(),this.txtEmail.getText(),this.txtTelefono.getText());
+        if(validar.ValidacionPaciente(a)){return;}
         if(!StringUtils.isEmptyOrWhitespaceOnly(lbId.getText())){
             a.setId(Integer.parseInt(lbId.getText()));
             try {
